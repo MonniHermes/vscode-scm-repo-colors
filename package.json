@@ -1,0 +1,143 @@
+{
+  "name": "scm-repo-colors",
+  "displayName": "SCM Repository Status Colors",
+  "description": "Color-coded multi-repository Git status in the Source Control panel.",
+  "version": "0.1.0",
+  "publisher": "monnihermes",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.92.0"
+  },
+  "categories": [
+    "SCM Providers",
+    "Visualization"
+  ],
+  "keywords": [
+    "git",
+    "scm",
+    "repository",
+    "status",
+    "colors"
+  ],
+  "activationEvents": [
+    "onView:scmRepoColors.repositoryStatus"
+  ],
+  "main": "./dist/src/extension.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MonniHermes/vscode-scm-repo-colors.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MonniHermes/vscode-scm-repo-colors/issues"
+  },
+  "homepage": "https://github.com/MonniHermes/vscode-scm-repo-colors#readme",
+  "scripts": {
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "build": "npm run clean && tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "test": "npm run build && node --test dist/test/**/*.test.js",
+    "package": "npm run build && vsce package --out scm-repo-colors-0.1.0.vsix"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "scmRepoColors.refresh",
+        "title": "Refresh Repository Status",
+        "icon": "$(refresh)"
+      }
+    ],
+    "views": {
+      "scm": [
+        {
+          "id": "scmRepoColors.repositoryStatus",
+          "name": "Repository Status",
+          "when": "gitOpenRepositoryCount > 0"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "scmRepoColors.refresh",
+          "when": "view == scmRepoColors.repositoryStatus",
+          "group": "navigation"
+        }
+      ]
+    },
+    "colors": {
+      "scmRepoColors.conflictForeground": {
+        "description": "Repository with merge conflicts.",
+        "defaults": {
+          "dark": "#F14C4C",
+          "light": "#B5200D",
+          "highContrast": "#FF6B6B",
+          "highContrastLight": "#8A1100"
+        }
+      },
+      "scmRepoColors.deletedForeground": {
+        "description": "Repository with deleted files.",
+        "defaults": {
+          "dark": "#E06C75",
+          "light": "#A31515",
+          "highContrast": "#FF8787",
+          "highContrastLight": "#8B0000"
+        }
+      },
+      "scmRepoColors.addedForeground": {
+        "description": "Repository with added or untracked files.",
+        "defaults": {
+          "dark": "#73C991",
+          "light": "#18864B",
+          "highContrast": "#7CFF9B",
+          "highContrastLight": "#006B2E"
+        }
+      },
+      "scmRepoColors.modifiedForeground": {
+        "description": "Repository with modified or renamed files.",
+        "defaults": {
+          "dark": "#CCA700",
+          "light": "#895503",
+          "highContrast": "#FFD700",
+          "highContrastLight": "#704000"
+        }
+      },
+      "scmRepoColors.behindForeground": {
+        "description": "Repository with incoming updates.",
+        "defaults": {
+          "dark": "#C586C0",
+          "light": "#8E4585",
+          "highContrast": "#FF9BF5",
+          "highContrastLight": "#702963"
+        }
+      },
+      "scmRepoColors.aheadForeground": {
+        "description": "Repository with outgoing commits.",
+        "defaults": {
+          "dark": "#4FC1FF",
+          "light": "#007ACC",
+          "highContrast": "#75D5FF",
+          "highContrastLight": "#005A9E"
+        }
+      },
+      "scmRepoColors.cleanForeground": {
+        "description": "Clean repository.",
+        "defaults": {
+          "dark": "#8C8C8C",
+          "light": "#616161",
+          "highContrast": "#FFFFFF",
+          "highContrastLight": "#292929"
+        }
+      }
+    }
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "^22.10.0",
+    "@types/vscode": "^1.92.0",
+    "@vscode/vsce": "3.9.2",
+    "eslint": "10.8.0",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.65.0"
+  }
+}
