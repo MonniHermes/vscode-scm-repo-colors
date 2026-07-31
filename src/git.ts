@@ -1,6 +1,7 @@
 import type { Disposable, Event, Extension, Uri } from 'vscode';
 
 export interface GitChange {
+  readonly uri: Uri;
   readonly status: number;
 }
 

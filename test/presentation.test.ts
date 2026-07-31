@@ -6,7 +6,7 @@ import { aggregateStatus, GitChangeStatus } from '../src/status';
 const summary = (name: string, dirty: boolean): RepositorySummary => ({
   name,
   branch: 'main',
-  status: aggregateStatus({ indexChanges: dirty ? [{ status: GitChangeStatus.Modified }] : [], workingTreeChanges: [], untrackedChanges: [], mergeChanges: [] })
+  status: aggregateStatus({ indexChanges: dirty ? [{ key: name, status: GitChangeStatus.Modified }] : [], workingTreeChanges: [], untrackedChanges: [], mergeChanges: [] })
 });
 
 test('sorts dirty repositories before clean repositories, then alphabetically', () => {
@@ -16,7 +16,7 @@ test('sorts dirty repositories before clean repositories, then alphabetically', 
 test('formats deterministic compact and complete summaries', () => {
   const item: RepositorySummary = {
     name: 'api', branch: 'feature',
-    status: aggregateStatus({ indexChanges: [{ status: GitChangeStatus.IndexAdded }], workingTreeChanges: [{ status: GitChangeStatus.Modified }], untrackedChanges: [], mergeChanges: [], ahead: 2 })
+    status: aggregateStatus({ indexChanges: [{ key: 'added.ts', status: GitChangeStatus.IndexAdded }], workingTreeChanges: [{ key: 'modified.ts', status: GitChangeStatus.Modified }], untrackedChanges: [], mergeChanges: [], ahead: 2 })
   };
   assert.equal(formatDescription(item), 'feature • C:0 D:0 A:1 M:1 ↓:0 ↑:2');
   assert.match(formatTooltip(item), /Added\/untracked: 1/);

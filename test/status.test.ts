@@ -2,14 +2,14 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { aggregateStatus, GitChangeStatus } from '../src/status';
 
-const change = (status: number): { status: number } => ({ status });
+const change = (key: string, status: number): { key: string; status: number } => ({ key, status });
 
 test('aggregates every category and applies documented priority', () => {
   const status = aggregateStatus({
-    indexChanges: [change(GitChangeStatus.IndexAdded), change(GitChangeStatus.IndexDeleted), change(GitChangeStatus.IndexRenamed)],
-    workingTreeChanges: [change(GitChangeStatus.Untracked), change(GitChangeStatus.Modified)],
-    untrackedChanges: [change(GitChangeStatus.Untracked)],
-    mergeChanges: [change(GitChangeStatus.Modified)],
+    indexChanges: [change('added.ts', GitChangeStatus.IndexAdded), change('deleted.ts', GitChangeStatus.IndexDeleted), change('renamed.ts', GitChangeStatus.IndexRenamed)],
+    workingTreeChanges: [change('new.ts', GitChangeStatus.Untracked), change('modified.ts', GitChangeStatus.Modified)],
+    untrackedChanges: [change('other-new.ts', GitChangeStatus.Untracked)],
+    mergeChanges: [change('conflict.ts', GitChangeStatus.Modified)],
     ahead: 4,
     behind: 2
   });
@@ -23,11 +23,22 @@ test('counts changes from the dedicated untracked collection', () => {
   const status = aggregateStatus({
     indexChanges: [],
     workingTreeChanges: [],
-    untrackedChanges: [change(GitChangeStatus.Untracked), change(GitChangeStatus.Untracked)],
+    untrackedChanges: [change('one.ts', GitChangeStatus.Untracked), change('two.ts', GitChangeStatus.Untracked)],
     mergeChanges: []
   });
   assert.equal(status.added, 2);
   assert.equal(status.primary, 'added');
+});
+
+test('counts a staged then modified file once using the highest-priority state', () => {
+  const status = aggregateStatus({
+    indexChanges: [change('same.ts', GitChangeStatus.IndexAdded)],
+    workingTreeChanges: [change('same.ts', GitChangeStatus.Modified)],
+    untrackedChanges: [],
+    mergeChanges: []
+  });
+  assert.equal(status.added, 1);
+  assert.equal(status.modified, 0);
 });
 
 test('prioritizes incoming updates over outgoing updates', () => {
