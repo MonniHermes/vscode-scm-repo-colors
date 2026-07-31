@@ -13,8 +13,11 @@ function harness(selectedIndex = 0, focusCommandAvailable = true): {
   repositories: RevealCandidate[];
   commands: string[];
   adapter: RevealCommandAdapter;
+  cancel: () => void;
 } {
   let focusedInput = false;
+  let cancelled = false;
+  let selectionWaiter: ((changed: boolean) => void) | undefined;
   const selected = [selectedIndex === 0, selectedIndex === 1];
   const commands: string[] = [];
   const repositories = ['one', 'two'].map((key, index) => ({
@@ -26,18 +29,23 @@ function harness(selectedIndex = 0, focusCommandAvailable = true): {
     execute: (command) => {
       commands.push(command);
       if (command === FOCUS_NEXT_INPUT_COMMAND) {
+        let changed = false;
         if (focusedInput) {
           const current = selected.findIndex(Boolean);
           selected[current] = false;
           selected[(current + 1) % selected.length] = true;
+          changed = true;
         }
         focusedInput = true;
+        selectionWaiter?.(changed);
+        selectionWaiter = undefined;
       }
       return Promise.resolve();
     },
-    pause: () => Promise.resolve()
+    waitForSelectionChange: () => new Promise((resolve) => { selectionWaiter = resolve; }),
+    isCancelled: () => cancelled
   };
-  return { repositories, commands, adapter };
+  return { repositories, commands, adapter, cancel: () => { cancelled = true; } };
 }
 
 test('focuses and expands a selected native repository on the first click command', async () => {
@@ -61,5 +69,12 @@ test('expands all visible repositories when the exact focus command is unavailab
 test('does nothing when the clicked repository has closed', async () => {
   const { repositories, commands, adapter } = harness(0);
   assert.equal(await revealNativeRepository(repositories, 'missing', adapter), 'missing');
+  assert.deepEqual(commands, []);
+});
+
+test('stops before issuing commands when a newer reveal request cancels it', async () => {
+  const { repositories, commands, adapter, cancel } = harness(0);
+  cancel();
+  assert.equal(await revealNativeRepository(repositories, 'two', adapter), 'cancelled');
   assert.deepEqual(commands, []);
 });
