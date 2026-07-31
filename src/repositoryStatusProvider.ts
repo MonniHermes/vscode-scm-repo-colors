@@ -23,6 +23,7 @@ function statusFor(repository: GitRepository): RepositoryStatus {
   return aggregateStatus({
     indexChanges: repository.state.indexChanges,
     workingTreeChanges: repository.state.workingTreeChanges,
+    untrackedChanges: repository.state.untrackedChanges,
     mergeChanges: repository.state.mergeChanges,
     ahead: head?.ahead,
     behind: head?.behind

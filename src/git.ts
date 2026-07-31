@@ -14,6 +14,7 @@ export interface GitRepositoryState {
   readonly HEAD?: GitBranch;
   readonly indexChanges: readonly GitChange[];
   readonly workingTreeChanges: readonly GitChange[];
+  readonly untrackedChanges: readonly GitChange[];
   readonly mergeChanges: readonly GitChange[];
   readonly onDidChange: Event<void>;
 }

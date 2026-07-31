@@ -12,6 +12,7 @@ export interface StatusCounts {
 export interface ChangeArrays {
   readonly indexChanges: readonly { readonly status: number }[];
   readonly workingTreeChanges: readonly { readonly status: number }[];
+  readonly untrackedChanges: readonly { readonly status: number }[];
   readonly mergeChanges: readonly { readonly status: number }[];
   readonly ahead?: number;
   readonly behind?: number;
@@ -30,7 +31,7 @@ export function aggregateStatus(changes: ChangeArrays): RepositoryStatus {
   let deleted = 0;
   let added = 0;
   let modified = 0;
-  for (const change of [...changes.indexChanges, ...changes.workingTreeChanges]) {
+  for (const change of [...changes.indexChanges, ...changes.workingTreeChanges, ...changes.untrackedChanges]) {
     if (DELETED.has(change.status)) deleted += 1;
     else if (ADDED.has(change.status)) added += 1;
     else if (MODIFIED.has(change.status)) modified += 1;
