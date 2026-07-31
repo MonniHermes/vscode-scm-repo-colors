@@ -1,5 +1,21 @@
 export type PrimaryStatus = 'conflict' | 'deleted' | 'added' | 'modified' | 'behind' | 'ahead' | 'clean';
 
+/** Ordinals from the stable v1 API exposed by VS Code's built-in Git extension. */
+export enum GitChangeStatus {
+  IndexModified = 0,
+  IndexAdded = 1,
+  IndexDeleted = 2,
+  IndexRenamed = 3,
+  IndexCopied = 4,
+  Modified = 5,
+  Deleted = 6,
+  Untracked = 7,
+  Ignored = 8,
+  IntentToAdd = 9,
+  IntentToRename = 10,
+  TypeChanged = 11
+}
+
 export interface StatusCounts {
   readonly conflicts: number;
   readonly deleted: number;
@@ -23,9 +39,16 @@ export interface RepositoryStatus extends StatusCounts {
   readonly dirty: boolean;
 }
 
-const DELETED = new Set([2, 6]);
-const ADDED = new Set([1, 7, 9]);
-const MODIFIED = new Set([0, 3, 4, 5, 10, 11]);
+const DELETED = new Set([GitChangeStatus.IndexDeleted, GitChangeStatus.Deleted]);
+const ADDED = new Set([GitChangeStatus.IndexAdded, GitChangeStatus.Untracked, GitChangeStatus.IntentToAdd]);
+const MODIFIED = new Set([
+  GitChangeStatus.IndexModified,
+  GitChangeStatus.IndexRenamed,
+  GitChangeStatus.IndexCopied,
+  GitChangeStatus.Modified,
+  GitChangeStatus.IntentToRename,
+  GitChangeStatus.TypeChanged
+]);
 
 export function aggregateStatus(changes: ChangeArrays): RepositoryStatus {
   let deleted = 0;

@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { aggregateStatus } from '../src/status';
+import { aggregateStatus, GitChangeStatus } from '../src/status';
 
 const change = (status: number): { status: number } => ({ status });
 
 test('aggregates every category and applies documented priority', () => {
   const status = aggregateStatus({
-    indexChanges: [change(1), change(2), change(3)],
-    workingTreeChanges: [change(7), change(5)],
-    untrackedChanges: [change(7)],
-    mergeChanges: [change(18)],
+    indexChanges: [change(GitChangeStatus.IndexAdded), change(GitChangeStatus.IndexDeleted), change(GitChangeStatus.IndexRenamed)],
+    workingTreeChanges: [change(GitChangeStatus.Untracked), change(GitChangeStatus.Modified)],
+    untrackedChanges: [change(GitChangeStatus.Untracked)],
+    mergeChanges: [change(GitChangeStatus.Modified)],
     ahead: 4,
     behind: 2
   });
@@ -23,7 +23,7 @@ test('counts changes from the dedicated untracked collection', () => {
   const status = aggregateStatus({
     indexChanges: [],
     workingTreeChanges: [],
-    untrackedChanges: [change(7), change(7)],
+    untrackedChanges: [change(GitChangeStatus.Untracked), change(GitChangeStatus.Untracked)],
     mergeChanges: []
   });
   assert.equal(status.added, 2);
