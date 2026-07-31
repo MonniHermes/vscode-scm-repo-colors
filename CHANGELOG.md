@@ -16,6 +16,8 @@ All notable changes to this project are documented here.
 ### Fixed
 
 - Count files present in multiple Git change collections only once, using the highest-priority state.
+- Wait for native repository selection events instead of assuming a fixed UI delay.
+- Serialize reveal requests and cancel stale work when repositories are clicked rapidly.
 
 ### Changed
 

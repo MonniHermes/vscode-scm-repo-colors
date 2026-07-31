@@ -45,6 +45,8 @@ function modelFor(repository: GitRepository): RepositoryModel {
 export class RepositoryStatusProvider implements vscode.TreeDataProvider<RepositoryModel>, vscode.FileDecorationProvider {
   private readonly treeEmitter = new vscode.EventEmitter<void>();
   private readonly decorationEmitter = new vscode.EventEmitter<vscode.Uri[]>();
+  private revealGeneration = 0;
+  private revealQueue: Promise<void> = Promise.resolve();
   readonly onDidChangeTreeData = this.treeEmitter.event;
   readonly onDidChangeFileDecorations = this.decorationEmitter.event;
 
@@ -79,19 +81,44 @@ export class RepositoryStatusProvider implements vscode.TreeDataProvider<Reposit
     return element === undefined ? sortRepositories(this.api.repositories.map(modelFor)) : [];
   }
 
-  async revealRepository(rootUri: string): Promise<void> {
-    await revealNativeRepository(
-      this.api.repositories.map((repository) => ({
-        key: repository.rootUri.toString(),
-        isSelected: () => repository.ui.selected
-      })),
-      rootUri,
-      {
-        getCommands: () => Promise.resolve(vscode.commands.getCommands(true)),
-        execute: (command) => Promise.resolve(vscode.commands.executeCommand(command)),
-        pause: (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds))
+  revealRepository(rootUri: string): Promise<void> {
+    const generation = ++this.revealGeneration;
+    const task = this.revealQueue.catch(() => undefined).then(async () => {
+      if (generation !== this.revealGeneration) return;
+      await revealNativeRepository(
+        this.api.repositories.map((repository) => ({
+          key: repository.rootUri.toString(),
+          isSelected: () => repository.ui.selected
+        })),
+        rootUri,
+        {
+          getCommands: () => Promise.resolve(vscode.commands.getCommands(true)),
+          execute: (command) => Promise.resolve(vscode.commands.executeCommand(command)),
+          waitForSelectionChange: (timeout) => this.waitForSelectionChange(timeout),
+          isCancelled: () => generation !== this.revealGeneration
+        }
+      );
+    });
+    this.revealQueue = task.catch(() => undefined);
+    return task;
+  }
+
+  private waitForSelectionChange(timeoutMilliseconds: number): Promise<boolean> {
+    return new Promise((resolve) => {
+      let settled = false;
+      const subscriptions: vscode.Disposable[] = [];
+      const finish = (changed: boolean): void => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        subscriptions.forEach((subscription) => { subscription.dispose(); });
+        resolve(changed);
+      };
+      for (const repository of this.api.repositories) {
+        subscriptions.push(repository.ui.onDidChange(() => finish(true)));
       }
-    );
+      const timer = setTimeout(() => finish(false), timeoutMilliseconds);
+    });
   }
 
   provideFileDecoration(uri: vscode.Uri): vscode.FileDecoration | undefined {
