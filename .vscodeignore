@@ -1,0 +1,11 @@
+.github/**
+.vscode/**
+test/**
+src/**
+node_modules/**
+.eslint*
+tsconfig.json
+CONTRIBUTING.md
+.editorconfig
+.gitignore
+*.vsix
