@@ -12,3 +12,7 @@ All notable changes to this project are documented here.
 - Automatic and manual refresh.
 - Best-effort repository-root file decorations.
 - CI lint, typecheck, unit test, and VSIX packaging checks.
+
+### Fixed
+
+- Count files present in multiple Git change collections only once, using the highest-priority state.

@@ -20,11 +20,13 @@ const presentation: Record<PrimaryStatus, { readonly badge: string; readonly col
 
 function statusFor(repository: GitRepository): RepositoryStatus {
   const head = repository.state.HEAD;
+  const changes = (items: readonly { readonly uri: vscode.Uri; readonly status: number }[]) =>
+    items.map(({ uri, status }) => ({ key: uri.toString(), status }));
   return aggregateStatus({
-    indexChanges: repository.state.indexChanges,
-    workingTreeChanges: repository.state.workingTreeChanges,
-    untrackedChanges: repository.state.untrackedChanges,
-    mergeChanges: repository.state.mergeChanges,
+    indexChanges: changes(repository.state.indexChanges),
+    workingTreeChanges: changes(repository.state.workingTreeChanges),
+    untrackedChanges: changes(repository.state.untrackedChanges),
+    mergeChanges: changes(repository.state.mergeChanges),
     ahead: head?.ahead,
     behind: head?.behind
   });

@@ -25,11 +25,16 @@ export interface StatusCounts {
   readonly ahead: number;
 }
 
+export interface StatusChange {
+  readonly key: string;
+  readonly status: number;
+}
+
 export interface ChangeArrays {
-  readonly indexChanges: readonly { readonly status: number }[];
-  readonly workingTreeChanges: readonly { readonly status: number }[];
-  readonly untrackedChanges: readonly { readonly status: number }[];
-  readonly mergeChanges: readonly { readonly status: number }[];
+  readonly indexChanges: readonly StatusChange[];
+  readonly workingTreeChanges: readonly StatusChange[];
+  readonly untrackedChanges: readonly StatusChange[];
+  readonly mergeChanges: readonly StatusChange[];
   readonly ahead?: number;
   readonly behind?: number;
 }
@@ -51,19 +56,33 @@ const MODIFIED = new Set([
 ]);
 
 export function aggregateStatus(changes: ChangeArrays): RepositoryStatus {
-  let deleted = 0;
-  let added = 0;
-  let modified = 0;
+  type FileStatus = 'conflict' | 'deleted' | 'added' | 'modified';
+  const priority: Record<FileStatus, number> = { conflict: 4, deleted: 3, added: 2, modified: 1 };
+  const files = new Map<string, FileStatus>();
+
+  const classify = (change: StatusChange): FileStatus | undefined => {
+    if (DELETED.has(change.status)) return 'deleted';
+    if (ADDED.has(change.status)) return 'added';
+    if (MODIFIED.has(change.status)) return 'modified';
+    return undefined;
+  };
+  const record = (key: string, status: FileStatus): void => {
+    const current = files.get(key);
+    if (current === undefined || priority[status] > priority[current]) files.set(key, status);
+  };
+
   for (const change of [...changes.indexChanges, ...changes.workingTreeChanges, ...changes.untrackedChanges]) {
-    if (DELETED.has(change.status)) deleted += 1;
-    else if (ADDED.has(change.status)) added += 1;
-    else if (MODIFIED.has(change.status)) modified += 1;
+    const status = classify(change);
+    if (status !== undefined) record(change.key, status);
   }
+  changes.mergeChanges.forEach(({ key }) => record(key, 'conflict'));
+
+  const count = (status: FileStatus): number => [...files.values()].filter((value) => value === status).length;
   const counts: StatusCounts = {
-    conflicts: changes.mergeChanges.length,
-    deleted,
-    added,
-    modified,
+    conflicts: count('conflict'),
+    deleted: count('deleted'),
+    added: count('added'),
+    modified: count('modified'),
     behind: changes.behind ?? 0,
     ahead: changes.ahead ?? 0
   };

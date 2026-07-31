@@ -24,7 +24,7 @@ When several states apply, the primary visual follows this fixed priority:
 | 6 | `↑` | Ahead | Outgoing commits |
 | 7 | `✓` | Clean | No local or synchronization changes |
 
-All counts remain visible in the description and tooltip even when they do not determine the primary visual.
+All category counts remain visible in the description and tooltip. A file present in multiple Git collections (for example staged and then modified again) is counted once using the same highest-priority state shown above.
 
 ## Installation from VSIX
 
