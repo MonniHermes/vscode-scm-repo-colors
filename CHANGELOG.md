@@ -16,3 +16,8 @@ All notable changes to this project are documented here.
 ### Fixed
 
 - Count files present in multiple Git change collections only once, using the highest-priority state.
+
+### Changed
+
+- Clicking a repository now reveals and expands it in the native Source Control view when the built-in SCM focus command is available.
+- Keep the contributed Tree View native and color repository text without a custom row background.

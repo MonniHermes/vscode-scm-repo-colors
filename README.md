@@ -8,7 +8,7 @@ Color-coded multi-repository Git status directly inside VS Code's **Source Contr
 
 The **Repository Status** view lists every repository discovered by VS Code's built-in Git extension. Each row shows the branch, all active counters, a primary color and a one-character badge. Hover over a row for the complete status, including zero-valued counters.
 
-Repositories with changes or sync activity are shown before clean repositories; each group is sorted alphabetically. The view refreshes when repositories open or close, whenever Git state changes, and through the **Refresh Repository Status** command.
+Repositories with changes or sync activity are shown before clean repositories; each group is sorted alphabetically. The view refreshes when repositories open or close, whenever Git state changes, and through the **Refresh Repository Status** command. Click a repository to reveal and expand its input in VS Code's native Source Control view.
 
 ### Status legend and priority
 
@@ -55,7 +55,9 @@ Available tokens end in `conflictForeground`, `deletedForeground`, `addedForegro
 
 ## Limitations
 
-VS Code's stable extension API cannot reliably restyle the native SCM repository headers. This extension therefore provides its own **Repository Status** view in the Source Control container. It also registers a `FileDecorationProvider` for repository-root URIs as a best-effort enhancement: a native SCM header may use that decoration, but this is **not guaranteed**. A colorized `ThemeIcon` always provides a visual marker in the custom view. No proposed APIs are used.
+VS Code's stable extension API cannot reliably restyle the native SCM repository headers. This extension therefore provides its own native **Repository Status** Tree View in the Source Control container. Repository text is colored through stable file decorations; no custom row background or injected CSS is used.
+
+VS Code also exposes no public command that directly reveals one repository in the native SCM view. Repository clicks therefore feature-detect the long-standing built-in SCM focus command and fall back to expanding all visible native repositories if exact focus is unavailable. No proposed API or DOM manipulation is used.
 
 ## Development
 

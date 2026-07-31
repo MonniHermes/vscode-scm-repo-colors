@@ -17,6 +17,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     vscode.window.registerTreeDataProvider('scmRepoColors.repositoryStatus', provider),
     vscode.window.registerFileDecorationProvider(provider),
     vscode.commands.registerCommand('scmRepoColors.refresh', () => provider.refresh()),
+    vscode.commands.registerCommand('scmRepoColors.revealRepository', (rootUri: string) => provider.revealRepository(rootUri)),
     ...watchRepositories(api, () => provider.refresh())
   );
 }

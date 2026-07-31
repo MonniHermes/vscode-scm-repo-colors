@@ -20,9 +20,15 @@ export interface GitRepositoryState {
   readonly onDidChange: Event<void>;
 }
 
+export interface GitRepositoryUiState {
+  readonly selected: boolean;
+  readonly onDidChange: Event<void>;
+}
+
 export interface GitRepository {
   readonly rootUri: Uri;
   readonly state: GitRepositoryState;
+  readonly ui: GitRepositoryUiState;
 }
 
 export interface GitApi {
