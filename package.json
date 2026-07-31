@@ -31,12 +31,6 @@
     "url": "https://github.com/MonniHermes/vscode-scm-repo-colors/issues"
   },
   "homepage": "https://github.com/MonniHermes/vscode-scm-repo-colors#readme",
-  "files": [
-    "dist",
-    "README.md",
-    "CHANGELOG.md",
-    "LICENSE"
-  ],
   "scripts": {
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "build": "npm run clean && tsc -p tsconfig.json",
