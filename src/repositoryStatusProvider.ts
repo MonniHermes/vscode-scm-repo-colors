@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import type { GitApi, GitRepository } from './git';
 import { aggregateStatus, type PrimaryStatus, type RepositoryStatus } from './status';
 import { formatDescription, formatTooltip, sortRepositories, type RepositorySummary } from './presentation';
+import { revealNativeRepository } from './reveal';
 
 interface RepositoryModel extends RepositorySummary {
   readonly repository: GitRepository;
@@ -61,6 +62,11 @@ export class RepositoryStatusProvider implements vscode.TreeDataProvider<Reposit
     item.tooltip = formatTooltip(model);
     item.resourceUri = model.repository.rootUri;
     item.iconPath = new vscode.ThemeIcon('repo', new vscode.ThemeColor(visual.color));
+    item.command = {
+      command: 'scmRepoColors.revealRepository',
+      title: 'Reveal Repository in Source Control',
+      arguments: [model.repository.rootUri.toString()]
+    };
     item.contextValue = `scmRepoColors.${model.status.primary}`;
     item.accessibilityInformation = {
       label: `${model.name}, ${model.branch}, ${model.status.primary}`,
@@ -71,6 +77,21 @@ export class RepositoryStatusProvider implements vscode.TreeDataProvider<Reposit
 
   getChildren(element?: RepositoryModel): RepositoryModel[] {
     return element === undefined ? sortRepositories(this.api.repositories.map(modelFor)) : [];
+  }
+
+  async revealRepository(rootUri: string): Promise<void> {
+    await revealNativeRepository(
+      this.api.repositories.map((repository) => ({
+        key: repository.rootUri.toString(),
+        isSelected: () => repository.ui.selected
+      })),
+      rootUri,
+      {
+        getCommands: () => Promise.resolve(vscode.commands.getCommands(true)),
+        execute: (command) => Promise.resolve(vscode.commands.executeCommand(command)),
+        pause: (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds))
+      }
+    );
   }
 
   provideFileDecoration(uri: vscode.Uri): vscode.FileDecoration | undefined {
